@@ -1,0 +1,18 @@
+Package: mojpakiet
+Type: Package
+Title: Filtracja i Analiza Trajektorii GPS za pomoca Filtru Kalmana 2D
+Version: 0.1.0
+Authors@R: person("Szymon", "Lachowicz",
+    email = "01199240@pw.edu.pl",
+    role = c("aut", "cre"))
+Author: Szymon Lachowicz [aut, cre]
+Maintainer: Szymon Lachowicz <01199240@pw.edu.pl>
+Description: Pakiet implementuje zaawansowany dwuwymiarowy Filtr Kalmana
+    zintegrowany z kodem w jezyku C za pomoca interfejsu .Call. Sluzy do
+    usuwania szumu oraz filtrowania anomalii z serii czasowych wspolrzednych
+    geograficznych.
+License: GPL (>= 3)
+Depends: R (>= 4.0.0)
+RoxygenNote: 8.0.0
+Encoding: UTF-8
+NeedsCompilation: yes

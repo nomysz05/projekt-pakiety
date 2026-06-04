@@ -1,0 +1,7 @@
+*.o
+*.so
+*.Rcheck/
+*.tar.gz
+.Rhistory
+.RData
+.vscode/
