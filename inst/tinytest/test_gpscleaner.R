@@ -67,7 +67,6 @@ oblicz_calkowity_dystans <- function(lats, lons) {
   for (i in 1:(n_pts - 1)) {
     dlat <- lats[i+1] - lats[i]
     dlon <- lons[i+1] - lons[i]
-    # Używamy odległości euklidesowej dla stopnia współrzędnych
     dystans_suma <- dystans_suma + sqrt(dlat^2 + dlon^2)
   }
   return(dystans_suma)
