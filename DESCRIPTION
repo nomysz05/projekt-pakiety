@@ -18,3 +18,4 @@ Depends: R (>= 4.0.0)
 RoxygenNote: 8.0.0
 Encoding: UTF-8
 NeedsCompilation: yes
+Suggests: tinytest

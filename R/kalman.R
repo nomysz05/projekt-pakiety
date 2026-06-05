@@ -24,7 +24,7 @@
 #' lat <- c(52.2, 52.2001, 52.2002, 52.2003)
 #' lon <- c(21.0, 21.0001, 21.0002, 21.0003)
 #' speed <- c(13.0,13.0,13.0,13.0)
-#' kalman_filter_2d(time, lat, lon, speed)
+#' gps_noise_cleaner(time, lat, lon, speed)
 #' @export
 #' @useDynLib gpscleaner, .registration = TRUE
 gps_noise_cleaner <- function(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 1.0) {
@@ -39,7 +39,6 @@ gps_noise_cleaner <- function(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 
   stopifnot(length(time) == n, length(lon) == n, length(speed) == n)
 
   if (max(abs(lat), na.rm = TRUE) > 180 || max(abs(lon), na.rm = TRUE) > 180) {
-    message("Detected semicircles format - converting to decimal degrees")
     lat <- lat * (180 / 2^31)
     lon <- lon * (180 / 2^31)
   }
@@ -48,16 +47,9 @@ gps_noise_cleaner <- function(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 
     stop("Latitude values must be between -90 and 90 degrees")
   if (any(abs(lon) > 180, na.rm = TRUE))
     stop("Longitude values must be between -180 and 180 degrees")
-  if (any(speed < 0, na.rm = TRUE)) {
-    warning("Negative speed values detected - taking absolute values")
-    speed <- abs(speed)
-  }
-
-  # valid_idx musi byc zdefiniowane przed uyciem
+    
   valid_idx <- which(!is.na(time) & !is.na(lat) & !is.na(lon) & !is.na(speed))
 
-  if (any(diff(time[valid_idx]) <= 0))
-    warning("Time vector is not strictly increasing - results may be unreliable")
 
   if (length(valid_idx) < 2) {
     return(data.frame(clean_lat = rep(NA_real_, n),
