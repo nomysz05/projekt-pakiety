@@ -9,26 +9,35 @@ kalman_filter_2d(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 1)
 \arguments{
 \item{time}{Numeric vector with time in seconds}
 
-\item{lat}{Numeric vector with latitude}
+\item{lat}{Numeric vector with latitude in decimal degrees or semicircles}
 
-\item{lon}{Numeric vector with longitude}
+\item{lon}{Numeric vector with longitude in decimal degrees or semicircles}
 
-\item{speed}{Numeric vector with speed in km/h}
+\item{speed}{Numeric vector with speed in m/s}
 
-\item{sigma_a}{Process noise parameter (default 0.8)}
+\item{sigma_a}{Process noise parameter - controls how much acceleration
+is expected between steps (default 0.8)}
 
-\item{sigma_gps}{GPS measurement noise in meters (default 1.0)}
+\item{sigma_gps}{GPS measurement noise in meters - higher values trust
+the model more than the GPS signal (default 1.0)}
 }
 \value{
-A data.frame with filtered coordinates: clean_lat and clean_lon
+A data.frame with two columns:
+\describe{
+  \item{clean_lat}{Filtered latitude in decimal degrees}
+  \item{clean_lon}{Filtered longitude in decimal degrees}
+}
 }
 \description{
-2D Kalman Filter for GPS Coordinates
+Filters noisy GPS coordinates using a 2D Kalman filter implemented in C.
+The filter uses position and velocity as state variables, and automatically
+detects and rejects outliers (points more than 30 meters from the predicted
+position). Supports automatic conversion from semicircles to decimal degrees.
 }
 \examples{
 time <- c(0, 1, 2, 3)
 lat <- c(52.2, 52.2001, 52.2002, 52.2003)
 lon <- c(21.0, 21.0001, 21.0002, 21.0003)
-speed <- c(10, 10, 10, 10)
+speed <- c(2.0, 2.0, 2.0, 2.0)
 kalman_filter_2d(time, lat, lon, speed)
 }
