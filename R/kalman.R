@@ -23,11 +23,11 @@
 #' time <- c(0, 1, 2, 3)
 #' lat <- c(52.2, 52.2001, 52.2002, 52.2003)
 #' lon <- c(21.0, 21.0001, 21.0002, 21.0003)
-#' speed <- c(2.0, 2.0, 2.0, 2.0)
+#' speed <- c(13.0,13.0,13.0,13.0)
 #' kalman_filter_2d(time, lat, lon, speed)
 #' @export
-#' @useDynLib mojpakiet, .registration = TRUE
-kalman_filter_2d <- function(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 1.0) {
+#' @useDynLib gpscleaner, .registration = TRUE
+gps_noise_cleaner <- function(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 1.0) {
   stopifnot(is.numeric(time), is.numeric(lat), is.numeric(lon), is.numeric(speed))
   stopifnot(is.numeric(sigma_a), is.numeric(sigma_gps))
 
@@ -71,7 +71,7 @@ kalman_filter_2d <- function(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 1
                       as.numeric(speed[valid_idx]),
                       as.numeric(sigma_a),
                       as.numeric(sigma_gps),
-                      PACKAGE = "mojpakiet")
+                      PACKAGE = "gpscleaner")
 
   clean_lat <- rep(NA_real_, n)
   clean_lon <- rep(NA_real_, n)
@@ -103,7 +103,7 @@ kalman_filter_2d <- function(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 1
 #' time <- c(0, 1, 2, 3, 4)
 #' lat <- c(52.2, NA, NA, 52.2003, 52.2004)
 #' lon <- c(21.0, NA, NA, 21.0003, 21.0004)
-#' speed <- c(2.0, 1.5, 1.8, 2.3, 2.4)
+#' speed <- c(13.0,13.0,13.0,13.0,13.0)
 #' interpolate_gps(time, lat, lon, speed)
 #' @export
 interpolate_gps <- function(time, lat, lon, speed) {
@@ -134,7 +134,7 @@ interpolate_gps <- function(time, lat, lon, speed) {
                       as.numeric(lat),
                       as.numeric(lon),
                       as.numeric(speed),
-                      PACKAGE = "mojpakiet")
+                      PACKAGE = "gpscleaner")
 
   return(data.frame(interp_lat   = raw_result[[1]],
                     interp_lon   = raw_result[[2]],

@@ -9,9 +9,9 @@ interpolate_gps(time, lat, lon, speed)
 \arguments{
 \item{time}{Numeric vector with time in seconds}
 
-\item{lat}{Numeric vector with latitude in decimal degrees (may contain NA)}
+\item{lat}{Numeric vector with latitude (may contain NA)}
 
-\item{lon}{Numeric vector with longitude in decimal degrees (may contain NA)}
+\item{lon}{Numeric vector with longitude (may contain NA)}
 
 \item{speed}{Numeric vector with speed in m/s (may contain NA)}
 }
@@ -34,6 +34,6 @@ are preserved where coordinates were valid.
 time <- c(0, 1, 2, 3, 4)
 lat <- c(52.2, NA, NA, 52.2003, 52.2004)
 lon <- c(21.0, NA, NA, 21.0003, 21.0004)
-speed <- c(2.0, 1.5, 1.8, 2.3, 2.4)
+speed <- c(13.0,13.0,13.0,13.0,13.0)
 interpolate_gps(time, lat, lon, speed)
 }
