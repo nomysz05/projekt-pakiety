@@ -65,7 +65,7 @@ The example below demonstrates the package's capability to process distorted tra
 
 The package successfully reconstructs the missing data points via time-based linear interpolation and deploys the C-implemented 2D Kalman filter to reject the massive outlier jump completely, keeping the path physically continuous and smooth.
 
-![GPS Cleaner Performance Plot](man/figures/README-wykres.png)
+![GPS Cleaner Performance Plot](./man/figures/README-wykres.png)
 
 ## API Parameters Reference
 
