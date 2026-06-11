@@ -1,7 +1,7 @@
 Package: gpscleaner
 Type: Package
 Title: 2D Kalman Filter and Interpolation for GPS Trajectory Analysis
-Version: 0.1.0
+Version: 1.0.0
 Authors@R: person("Szymon", "Lachowicz",
     email = "01199240@pw.edu.pl",
     role = c("aut", "cre"))

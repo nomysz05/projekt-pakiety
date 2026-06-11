@@ -37,19 +37,58 @@ gps_noise_cleaner <- function(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 
   }
 
   stopifnot(length(time) == n, length(lon) == n, length(speed) == n)
-
+  
+  semicircles=0
   if (max(abs(lat), na.rm = TRUE) > 180 || max(abs(lon), na.rm = TRUE) > 180) {
     lat <- lat * (180 / 2^31)
     lon <- lon * (180 / 2^31)
+    semicircles=1;
   }
 
   if (any(abs(lat) > 90, na.rm = TRUE))
     stop("Latitude values must be between -90 and 90 degrees")
   if (any(abs(lon) > 180, na.rm = TRUE))
     stop("Longitude values must be between -180 and 180 degrees")
-    
-  valid_idx <- which(!is.na(time) & !is.na(lat) & !is.na(lon) & !is.na(speed))
 
+  # --- PRZED-FILTRACJA OUTLIERÓW W R ---
+  # Tworzymy robocze kopie współrzędnych, na których będziemy łatać skoki
+  filtered_lat <- lat
+  filtered_lon <- lon
+
+  if (n >= 2) {
+    # Szukamy pierwszego poprawnego punktu startowego (nie-NA)
+    last_valid_idx <- which(!is.na(time) & !is.na(filtered_lat) & !is.na(filtered_lon))[1]
+    
+    if (!is.na(last_valid_idx) && last_valid_idx < n) {
+      for (i in (last_valid_idx + 1):n) {
+        if (is.na(time[i]) || is.na(filtered_lat[i]) || is.na(filtered_lon[i]) || is.na(speed[i])) next
+        
+        dt <- time[i] - time[last_valid_idx]
+        if (dt <= 0) dt <- 1.0
+        
+        # Przeliczanie dystansu w metrach między obecnym punktem a ostatnim dobrym punktem
+        d_lat_m <- (filtered_lat[i] - filtered_lat[last_valid_idx]) * 111111.0
+        d_lon_m <- (filtered_lon[i] - filtered_lon[last_valid_idx]) * 68000.0
+        actual_dist <- sqrt(d_lat_m^2 + d_lon_m^2)
+        
+        # Spodziewany maksymalny dystans (droga z prędkości + 15 metrów bezpiecznego zapasu na błąd)
+        max_allowed_dist <- (dt * speed[i]) + 15.0
+        
+        if (actual_dist > max_allowed_dist) {
+          # WYKRYTO SKOK! Zastępujemy obecny zniekształcony punkt pozycją z poprzedniego poprawnego kroku
+          filtered_lat[i] <- filtered_lat[last_valid_idx]
+          filtered_lon[i] <- filtered_lon[last_valid_idx]
+          # Prędkość w miejscu outliera zerujemy lub zostawiamy poprzednią, aby model zwolnił w miejscu zatrzymania
+        } else {
+          # Punkt jest fizycznie poprawny, staje się nowym punktem odniesienia do kolejnego kroku
+          last_valid_idx <- i
+        }
+      }
+    }
+  }
+  # -------------------------------------
+
+  valid_idx <- which(!is.na(time) & !is.na(filtered_lat) & !is.na(filtered_lon) & !is.na(speed))
 
   if (length(valid_idx) < 2) {
     return(data.frame(clean_lat = rep(NA_real_, n),
@@ -58,8 +97,8 @@ gps_noise_cleaner <- function(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 
 
   raw_result <- .Call("kalman",
                       as.numeric(time[valid_idx]),
-                      as.numeric(lat[valid_idx]),
-                      as.numeric(lon[valid_idx]),
+                      as.numeric(filtered_lat[valid_idx]),
+                      as.numeric(filtered_lon[valid_idx]),
                       as.numeric(speed[valid_idx]),
                       as.numeric(sigma_a),
                       as.numeric(sigma_gps),
@@ -69,7 +108,11 @@ gps_noise_cleaner <- function(time, lat, lon, speed, sigma_a = 0.8, sigma_gps = 
   clean_lon <- rep(NA_real_, n)
   clean_lat[valid_idx] <- raw_result[[1]]
   clean_lon[valid_idx] <- raw_result[[2]]
-
+  
+  if (semicircles){
+    clean_lat <- clean_lat * (2^31 / 180)
+    clean_lon <- clean_lon * (2^31 / 180)
+  }
   return(data.frame(clean_lat = clean_lat, clean_lon = clean_lon))
 }
 #' Linear Interpolation of Missing GPS Coordinates with Speed Recalculation
@@ -115,10 +158,11 @@ interpolate_gps <- function(time, lat, lon, speed) {
                       interp_lon   = lon,
                       interp_speed = speed))
   }
+  semicircles=0
   if (max(abs(lat), na.rm = TRUE) > 180 || max(abs(lon), na.rm = TRUE) > 180) {
-    message("Detected semicircles format - converting to decimal degrees")
     lat <- lat * (180 / 2^31)
     lon <- lon * (180 / 2^31)
+    semicircles=1
   }
 
   raw_result <- .Call("interpolate_gps",
@@ -127,7 +171,10 @@ interpolate_gps <- function(time, lat, lon, speed) {
                       as.numeric(lon),
                       as.numeric(speed),
                       PACKAGE = "gpscleaner")
-
+  if (semicircles){
+    raw_result[[1]] <- raw_result[[1]]* (2^31 / 180)
+    raw_result[[2]] <- raw_result[[2]]* (2^31 / 180)
+  }
   return(data.frame(interp_lat   = raw_result[[1]],
                     interp_lon   = raw_result[[2]],
                     interp_speed = raw_result[[3]]))

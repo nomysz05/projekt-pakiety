@@ -39,5 +39,5 @@ time <- c(0, 1, 2, 3)
 lat <- c(52.2, 52.2001, 52.2002, 52.2003)
 lon <- c(21.0, 21.0001, 21.0002, 21.0003)
 speed <- c(13.0,13.0,13.0,13.0)
-kalman_filter_2d(time, lat, lon, speed)
+gps_noise_cleaner(time, lat, lon, speed)
 }
