@@ -1,4 +1,12 @@
-url: ~
+
+
+url: https://nomysz05.github.io/projekt-pakiety/
 template:
   bootstrap: 5
+  bootswatch: united
+  navbar:
+    type: light
+    bg: light
 
+development:
+  mode: release

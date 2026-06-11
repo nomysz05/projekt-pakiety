@@ -1,8 +1,10 @@
-# gps_cleaner
+# gpscleaner
 
 An advanced 2D Kalman Filter and linear interpolation toolkit for GPS trajectory smoothing and analysis, implemented in R with a high-performance C backend via the `.Call` interface.
 
-The package is specifically designed to handle raw GPS data , offering dual-layer protection against telemetry anomalies: an R-level distance-velocity gate for severe outlier rejection and a native C Kalman core for optimal noise reduction.
+The package is specifically designed to handle raw GPS data, offering dual-layer protection against telemetry anomalies: an R-level distance-velocity gate for severe outlier rejection and a native C Kalman core for optimal noise reduction.
+
+---
 
 ## Installation
 
@@ -16,6 +18,7 @@ You can install the package directly from GitHub using the `devtools` package. R
 # install.packages("devtools")
 
 devtools::install_github("nomysz05/projekt-pakiety")
+```
 
 ### Method 2: From the Terminal via Git Clone
 If you prefer to download the source code manually, clone the GitHub repository, navigate into the main directory, and install it using the native R compiler toolchain:
@@ -29,31 +32,51 @@ cd projekt-pakiety
 
 # Install the package using R's package manager
 R CMD INSTALL .
+```
 
+---
 
 ## Usage
 
+```R
 library(gpscleaner)
 
-# 1. Clean noisy GPS data
-clean_data <- noise_cleaner(
-  time = c(0, 1, 2, 3),
-  lat  = c(52.2, 52.2001, 52.2002, 52.2003),
-  lon  = c(21.0, 21.0001, 21.0002, 21.0003),
-  speed = c(13.0, 13.0, 13.0, 13.0),
-  sigma_a = 0.8,
+# 1. Clean noisy GPS data (using 2D Kalman Filter)
+clean_data <- gps_noise_cleaner(
+  time      = c(0, 1, 2, 3), 
+  lat       = c(52.2, 52.2001, 52.2002, 52.2003), 
+  lon       = c(21.0, 21.0001, 21.0002, 21.0003), 
+  speed     = c(13.0, 13.0, 13.0, 13.0), 
+  sigma_a   = 0.8, 
   sigma_gps = 1.0
 )
 
-# 2. Interpolate missing data points
+# Accessing the filtered results:
+# The function returns a list containing the smoothed coordinates
+clean_data$clean_lat
+# Output: [1] 52.2000 52.2001 52.2002 52.2003
+
+clean_data$clean_lon
+# Output: [1] 21.0000 21.0001 21.0002 21.0003
+
+
+# 2. Interpolate missing data points with speed recalculation
 interp_data <- interpolate_gps(
-  time = c(0, 1, 2, 3, 4),
-  lat  = c(52.2, NA, NA, 52.2003, 52.2004),
-  lon  = c(21.0, NA, NA, 21.0003, 21.0004),
+  time  = c(0, 1, 2, 3, 4), 
+  lat   = c(52.2, NA, NA, 52.2003, 52.2004), 
+  lon   = c(21.0, NA, NA, 21.0003, 21.0004), 
   speed = c(13.0, 13.0, 13.0, 13.0, 13.0)
 )
 
+# Accessing the interpolated results:
+# Missing coordinates (NA) are completely reconstructed
+interp_data$lat
+# Output: [1] 52.2000 52.2001 52.2002 52.2003 52.2004
 
+# The speed vector is preserved and aligned with the new points
+interp_data$speed
+# Output: [1] 13.0 13.0 13.0 13.0 13.0
+```
 
 ### Visual Performance Verification
 
@@ -66,6 +89,14 @@ The example below demonstrates the package's capability to process distorted tra
 The package successfully reconstructs the missing data points via time-based linear interpolation and deploys the C-implemented 2D Kalman filter to reject the massive outlier jump completely, keeping the path physically continuous and smooth.
 
 ![GPS Cleaner Performance Plot](./man/figures/README-wykres.png)
+
+---
+
+To demonstrate the robustness of the 2D Kalman Filter, the following test case simulates a runner executing two sharp 90-degree turns. Exactly at the second turn, a massive GPS multipath anomaly (approx. 45 meters off-course) is injected.
+
+Despite the dynamic changes in direction, the filter correctly identifies the anomaly as physically impossible based on the provided speed and completely rejects it, while maintaining the geometric shape of the route.
+
+![U-Shape Trajectory Plot](./man/figures/README-wykres-zakrety.png)
 
 ## API Parameters Reference
 
